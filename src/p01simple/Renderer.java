@@ -2,13 +2,13 @@ package p01simple;
 //package lvl2advanced.p01gui.p01simple;
 
 import lwjglutils.OGLBuffers;
-import lwjglutils.OGLRenderTarget;
 import lwjglutils.OGLTexture2D;
 import lwjglutils.ShaderUtils;
-import transforms.*;
+import org.lwjgl.glfw.GLFWKeyCallback;
 
 import java.io.IOException;
 
+import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -18,65 +18,27 @@ import static org.lwjgl.opengl.GL30.*;
  * @version 2.0
  * @since 2019-09-02
  */
-public class Renderer extends AbstractRenderer {
+public class    Renderer extends AbstractRenderer {
 
     private int shaderProgram;
-    private int locView, locProjection, locType;
-    private OGLBuffers buffers, buffers4;
-    private Camera camera;
-    private Mat4PerspRH projection;
-    private OGLTexture2D.Viewer textureViewer;
-    private OGLTexture2D textureMosaic;
+    private int pictureId = 0;
+    private OGLBuffers buffers;
+    private OGLTexture2D texture;
 
-    private OGLRenderTarget renderTarget;
-    private int shaderProgramPostProcessing;
 
     @Override
     public void init() {
         super.init();
 
-        glEnable(GL_DEPTH_TEST); // zapne z-test (z-buffer) - až po new OGLTextRenderer (uvnitř super.init())
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // vyplnění přivrácených i odvrácených stran
+        glEnable(GL_DEPTH_TEST);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         shaderProgram = ShaderUtils.loadProgram("/start");
-        locView = glGetUniformLocation(shaderProgram, "view");
-        locProjection = glGetUniformLocation(shaderProgram, "projection");
-        locType = glGetUniformLocation(shaderProgram, "type");
 
-        shaderProgramPostProcessing = ShaderUtils.loadProgram("/post");
+        buffers = GridFactory.generateGrid();
 
-        buffers = GridFactory.generateGrid(50, 50);
-
-        // pro post-processingový krok stačí jeden quad (= 2 trojúhelníky = 4 vrcholy)
-        buffers4 = GridFactory.generateGrid(2, 2);
-
-        camera = new Camera()
-                .withPosition(new Vec3D(6, 6, 5))
-                .withAzimuth(5 / 4f * Math.PI)
-                .withZenith(-1 / 5f * Math.PI);
-
-//        Camera cameraLight = new Camera()
-//                .withPosition(...);
-//        cameraLight = cameraLight.right(1);
-//        cameraLight.getPosition();
-//
-//        Vec3D vec3D = new Vec3D(1, 2, 3);
-//        vec3D = vec3D.withX(vec3D.getX() + 1);
-//
-//        Mat4 model = new Mat4Transl(1, 0, 0);
-
-        projection = new Mat4PerspRH(
-                Math.PI / 3,
-                LwjglWindow.HEIGHT / (float) LwjglWindow.WIDTH,
-                1,
-                50
-        );
-
-        renderTarget = new OGLRenderTarget(1000, 1000);
-
-        textureViewer = new OGLTexture2D.Viewer();
         try {
-            textureMosaic = new OGLTexture2D("./textures/mosaic.jpg");
+            texture = new OGLTexture2D("./textures/duck.jpg");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -84,53 +46,67 @@ public class Renderer extends AbstractRenderer {
 
     @Override
     public void display() {
-        // znovu zapnout z-test (kvůli textRenderer)
         glEnable(GL_DEPTH_TEST);
-
-        renderMainScene();
-
-        renderPostProcessing();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, width, height);
-        textureViewer.view(textureMosaic, -1, -1, 0.5);
-        textureViewer.view(renderTarget.getColorTexture(), -1, -0.5, 0.5);
-        textureViewer.view(renderTarget.getDepthTexture(), -1, 0, 0.5);
-        textRenderer.addStr2D(width - 90, height - 3, " (c) PGRF UHK");
-    }
+        glClearColor(0.5f, 0.1f, 0.1f, 1f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    private void renderMainScene() {
         glUseProgram(shaderProgram);
+        texture.bind(shaderProgram, "texture", 0);
 
-        renderTarget.bind(); // a nastaví si vlastní viewport
-        glClearColor(0.5f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glUniformMatrix4fv(locView, false, camera.getViewMatrix().floatArray());
-        glUniformMatrix4fv(locProjection, false, projection.floatArray());
-
-        // vykreslit první těleso
-        glUniform1i(locType, 1);
         buffers.draw(GL_TRIANGLES, shaderProgram);
 
-        // vykreslit druhé těleso (do stejné scény)
-        glUniform1i(locType, 2);
-        buffers.draw(GL_TRIANGLES, shaderProgram);
+        String textureChangeHint = "Use arrows[<-][->] to change picture";
+
+        switch (pictureId){
+            case 0 -> changeTexture("./textures/duck.jpg");
+            case 1 -> changeTexture("./textures/cat.jpg");
+            case 2 -> changeTexture("./textures/woman.jpg");
+            case 3 -> changeTexture("./textures/orchard.jpg");
+            case 4 -> changeTexture("./textures/coffee.jpg");
+            case 5 -> changeTexture("./textures/dog.jpg");
+            case 6 -> changeTexture("./textures/horse.jpg");
+        }
+
+            textRenderer.addStr2D(3, 20, textureChangeHint);
     }
 
-    private void renderPostProcessing() {
-        glUseProgram(shaderProgramPostProcessing);
+    private final GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
+        @Override
+        public void invoke(long window, int key, int scancode, int action, int mods) {
+            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
+                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+            if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+                switch (key) {
+                    case GLFW_KEY_RIGHT -> {
+                        if (pictureId < 6){
+                            pictureId ++;
+                        } else pictureId = 0;
+                    }
+                    case GLFW_KEY_LEFT -> {
+                        if (pictureId > 0){
+                            pictureId --;
+                        } else pictureId = 6;
+                    }
+                }
+            }
+        }
+    };
 
-        // renderování do obrazovky (framebuffer=0)
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(0, 0, width, height);
-        glClearColor(0.0f, 0.5f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    @Override
+    public GLFWKeyCallback getKeyCallback() {
+        return keyCallback;
+    }
 
-        renderTarget.bindColorTexture(shaderProgramPostProcessing, "renderTargetTexture", 0);
-//        renderTarget.bindDepthTexture(shaderProgramPostProcessing, "nejakejmeno", 1);
-
-        buffers4.draw(GL_TRIANGLES, shaderProgramPostProcessing);
+    public void changeTexture(String texturePath){
+        try {
+            texture = new OGLTexture2D(texturePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

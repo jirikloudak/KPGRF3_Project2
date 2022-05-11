@@ -1,12 +1,11 @@
 #version 150
-out vec4 outColor; // output from the fragment shader
+out vec4 outColor;
 
-uniform int type;
+in vec2 textureCoord;
+
+uniform sampler2D texture;
 
 void main() {
-    if (type == 1) {
-        outColor = vec4(0.0, 1.0, 1.0, 1.0);
-    } else if (type == 2) {
-        outColor = vec4(1.0, 1.0, 0.0, 1.0);
-    }
-} 
+    vec3 textureColor = texture2D(texture, textureCoord).rgb;
+    outColor = vec4(textureColor, 1.0);
+}
