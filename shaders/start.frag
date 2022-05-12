@@ -18,11 +18,11 @@ int indexMatrix2x2[4] = int[]
 3, 1
 );
 
-// 3x3 -> 1/10
+// 3x3 -> 1/9
 int indexMatrix3x3[9] = int[]
-(3, 7, 4,
-6, 1, 9,
-2, 8, 5);
+(0, 7, 3,
+6, 5, 2,
+4, 1, 8);
 
 // 4x4 -> 1/16
 int indexMatrix4x4[16] = int[]
@@ -31,7 +31,7 @@ int indexMatrix4x4[16] = int[]
 3, 11, 1, 9,
 15, 7, 13, 5);
 
-//8x8 -> 1/64
+// 8x8 -> 1/64
 int indexMatrix8x8[64] = int[]
 (0, 48, 12, 60, 3, 51, 15, 63,
 32, 16, 44, 28, 35, 19, 47, 31,
@@ -74,18 +74,25 @@ void main() {
         outColor = vec4(textureColor.rgb, 1.0);
     } else if (displayMode == 1) {
         outColor = vec4(
-                dithering(textureColor.r, matrixMode),
-                dithering(textureColor.g, matrixMode),
-                dithering(textureColor.b, matrixMode),
-                1.0);
+            dithering(textureColor.r, matrixMode),
+            dithering(textureColor.g, matrixMode),
+            dithering(textureColor.b, matrixMode),
+            1.0);
     } else if (displayMode == 2){
         float grey = 0.21 * textureColor.r + 0.71 * textureColor.g + 0.07 * textureColor.b;
         float u_colorFactor = 0;
         textureColor = vec4(textureColor.r * u_colorFactor + grey * (1.0 - u_colorFactor), textureColor.g * u_colorFactor + grey * (1.0 - u_colorFactor), textureColor.b * u_colorFactor + grey * (1.0 - u_colorFactor), 1.0);
         outColor = vec4(
-                 dithering(textureColor.r, matrixMode),
-                 dithering(textureColor.g, matrixMode),
-                 dithering(textureColor.b, matrixMode),
-                 1.0);
+            dithering(textureColor.r, matrixMode),
+            dithering(textureColor.g, matrixMode),
+            dithering(textureColor.b, matrixMode),
+            1.0);
+    } else if (displayMode == 3){
+        textureColor = vec4(1 - textureColor.rgb, 1.0);
+        outColor = vec4(
+            dithering(textureColor.r, matrixMode),
+            dithering(textureColor.g, matrixMode),
+            dithering(textureColor.b, matrixMode),
+            1.0);
     }
 }

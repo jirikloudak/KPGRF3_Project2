@@ -18,7 +18,7 @@ import static org.lwjgl.opengl.GL30.*;
  * @version 2.0
  * @since 2019-09-02
  */
-public class    Renderer extends AbstractRenderer {
+public class Renderer extends AbstractRenderer {
 
     private int shaderProgram, locDisplayMode, locMatrixMode;
     private int pictureId = 0, matrixMode = 0, displayMode = 0;
@@ -66,9 +66,9 @@ public class    Renderer extends AbstractRenderer {
 
         buffers.draw(GL_TRIANGLES, shaderProgram);
 
-        String textureChangeHint = "Use arrows[<-][->] to change picture";
+        String textureChangeHint = "Use arrows[<-][->] to change picture, [SPACE] to change display mode, [M] to change dithering matrix";
 
-        switch (pictureId){
+        switch (pictureId) {
             case 0 -> changeTexture("./textures/duck.jpg");
             case 1 -> changeTexture("./textures/cat.jpg");
             case 2 -> changeTexture("./textures/woman.jpg");
@@ -80,7 +80,27 @@ public class    Renderer extends AbstractRenderer {
             case 8 -> changeTexture("./textures/parrot.jpg");
         }
 
-            textRenderer.addStr2D(3, 20, textureChangeHint);
+        String mode = "";
+        switch (displayMode) {
+            case 0 -> mode = "Clean picture";
+            case 1 -> mode = "Color dithering";
+            case 2 -> mode = "Grayscale dithering";
+            case 3 -> mode = "Negative dithering";
+        }
+
+        String matrix = "";
+        switch (matrixMode) {
+            case 0 -> matrix = "2x2 -> 1/4";
+            case 1 -> matrix = "3x3 -> 1/9";
+            case 2 -> matrix = "4x4 -> 1/16";
+            case 3 -> matrix = "8x8 -> 1/64";
+        }
+
+        textRenderer.addStr2D(3, 20, textureChangeHint);
+        textRenderer.addStr2D(3, 40, "Display mode: " + mode);
+        if (displayMode != 0) {
+            textRenderer.addStr2D(3, 60, "Matrix mode: " + matrix);
+        }
     }
 
     private final GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
@@ -91,24 +111,25 @@ public class    Renderer extends AbstractRenderer {
             if (action == GLFW_PRESS || action == GLFW_REPEAT) {
                 switch (key) {
                     case GLFW_KEY_RIGHT -> {
-                        if (pictureId < 8){
-                            pictureId ++;
+                        if (pictureId < 8) {
+                            pictureId++;
                         } else pictureId = 0;
                         changeTexture = true;
                     }
                     case GLFW_KEY_LEFT -> {
-                        if (pictureId > 0){
-                            pictureId --;
+                        if (pictureId > 0) {
+                            pictureId--;
                         } else pictureId = 8;
                         changeTexture = true;
                     }
                     case GLFW_KEY_SPACE -> {
-                        if (displayMode < 2){
+                        if (displayMode < 3) {
                             displayMode++;
                         } else displayMode = 0;
+                        matrixMode = 0;
                     }
                     case GLFW_KEY_M -> {
-                        if (matrixMode < 3){
+                        if (matrixMode < 3) {
                             matrixMode++;
                         } else matrixMode = 0;
                         System.out.println(matrixMode);
@@ -123,7 +144,7 @@ public class    Renderer extends AbstractRenderer {
         return keyCallback;
     }
 
-    public void changeTexture(String texturePath){
+    public void changeTexture(String texturePath) {
         if (changeTexture) {
             try {
                 texture = new OGLTexture2D(texturePath);
