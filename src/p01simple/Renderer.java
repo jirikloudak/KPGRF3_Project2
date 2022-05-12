@@ -22,6 +22,7 @@ public class    Renderer extends AbstractRenderer {
 
     private int shaderProgram, locDisplayMode, locMatrixMode;
     private int pictureId = 0, matrixMode = 0, displayMode = 0;
+    private boolean changeTexture = false;
     private OGLBuffers buffers;
     private OGLTexture2D texture;
 
@@ -75,6 +76,8 @@ public class    Renderer extends AbstractRenderer {
             case 4 -> changeTexture("./textures/coffee.jpg");
             case 5 -> changeTexture("./textures/dog.jpg");
             case 6 -> changeTexture("./textures/horse.jpg");
+            case 7 -> changeTexture("./textures/cake.jpg");
+            case 8 -> changeTexture("./textures/parrot.jpg");
         }
 
             textRenderer.addStr2D(3, 20, textureChangeHint);
@@ -88,24 +91,27 @@ public class    Renderer extends AbstractRenderer {
             if (action == GLFW_PRESS || action == GLFW_REPEAT) {
                 switch (key) {
                     case GLFW_KEY_RIGHT -> {
-                        if (pictureId < 6){
+                        if (pictureId < 8){
                             pictureId ++;
                         } else pictureId = 0;
+                        changeTexture = true;
                     }
                     case GLFW_KEY_LEFT -> {
                         if (pictureId > 0){
                             pictureId --;
-                        } else pictureId = 6;
+                        } else pictureId = 8;
+                        changeTexture = true;
                     }
                     case GLFW_KEY_SPACE -> {
-                        if (displayMode == 0){
-                            displayMode = 1;
+                        if (displayMode < 2){
+                            displayMode++;
                         } else displayMode = 0;
                     }
                     case GLFW_KEY_M -> {
-                        if (matrixMode == 0){
-                            matrixMode = 1;
+                        if (matrixMode < 3){
+                            matrixMode++;
                         } else matrixMode = 0;
+                        System.out.println(matrixMode);
                     }
                 }
             }
@@ -118,10 +124,13 @@ public class    Renderer extends AbstractRenderer {
     }
 
     public void changeTexture(String texturePath){
-        try {
-            texture = new OGLTexture2D(texturePath);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (changeTexture) {
+            try {
+                texture = new OGLTexture2D(texturePath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            changeTexture = false;
         }
     }
 
