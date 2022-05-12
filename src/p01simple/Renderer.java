@@ -20,8 +20,8 @@ import static org.lwjgl.opengl.GL30.*;
  */
 public class    Renderer extends AbstractRenderer {
 
-    private int shaderProgram;
-    private int pictureId = 0;
+    private int shaderProgram, locDisplayMode, locMatrixMode;
+    private int pictureId = 0, matrixMode = 0, displayMode = 0;
     private OGLBuffers buffers;
     private OGLTexture2D texture;
 
@@ -48,6 +48,12 @@ public class    Renderer extends AbstractRenderer {
     public void display() {
         glEnable(GL_DEPTH_TEST);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        locDisplayMode = glGetUniformLocation(shaderProgram, "displayMode");
+        locMatrixMode = glGetUniformLocation(shaderProgram, "matrixMode");
+
+        glUniform1i(locDisplayMode, displayMode);
+        glUniform1i(locMatrixMode, matrixMode);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, width, height);
@@ -90,6 +96,16 @@ public class    Renderer extends AbstractRenderer {
                         if (pictureId > 0){
                             pictureId --;
                         } else pictureId = 6;
+                    }
+                    case GLFW_KEY_SPACE -> {
+                        if (displayMode == 0){
+                            displayMode = 1;
+                        } else displayMode = 0;
+                    }
+                    case GLFW_KEY_M -> {
+                        if (matrixMode == 0){
+                            matrixMode = 1;
+                        } else matrixMode = 0;
                     }
                 }
             }
