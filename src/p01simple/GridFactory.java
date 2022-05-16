@@ -6,10 +6,10 @@ public class GridFactory {
 
     public static OGLBuffers generateGrid() {
         float[] vbData = {
-                -1, -1,0,1,
-                1, -1,1,1,
-                1, 1,1,0,
-                -1, 1,0,0};
+                -1, -1, 0, 1,
+                1, -1, 1, 1,
+                1, 1, 1, 0,
+                -1, 1, 0, 0};
         int[] ibData = {0, 1, 2, 0, 2, 3};
 
         OGLBuffers.Attrib[] attributes = {
@@ -17,7 +17,7 @@ public class GridFactory {
                 new OGLBuffers.Attrib("inTextureCoord", 2)
         };
 
-        return new OGLBuffers(vbData,4, attributes, ibData);
+        return new OGLBuffers(vbData, 4, attributes, ibData);
     }
 
 }

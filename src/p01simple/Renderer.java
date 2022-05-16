@@ -20,7 +20,7 @@ import static org.lwjgl.opengl.GL30.*;
  */
 public class Renderer extends AbstractRenderer {
 
-    private int shaderProgram, locDisplayMode, locMatrixMode;
+    private int shaderProgram;
     private int pictureId = 0, matrixMode = 0, displayMode = 0;
     private boolean changeTexture = false;
     private OGLBuffers buffers;
@@ -50,8 +50,8 @@ public class Renderer extends AbstractRenderer {
         glEnable(GL_DEPTH_TEST);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        locDisplayMode = glGetUniformLocation(shaderProgram, "displayMode");
-        locMatrixMode = glGetUniformLocation(shaderProgram, "matrixMode");
+        int locDisplayMode = glGetUniformLocation(shaderProgram, "displayMode");
+        int locMatrixMode = glGetUniformLocation(shaderProgram, "matrixMode");
 
         glUniform1i(locDisplayMode, displayMode);
         glUniform1i(locMatrixMode, matrixMode);
@@ -101,6 +101,7 @@ public class Renderer extends AbstractRenderer {
         if (displayMode != 0) {
             textRenderer.addStr2D(3, 60, "Matrix mode: " + matrix);
         }
+        textRenderer.addStr2D(width - 180, height - 3, " Jiri Klouda - PGRF UHK 2022");
     }
 
     private final GLFWKeyCallback keyCallback = new GLFWKeyCallback() {

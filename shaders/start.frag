@@ -68,31 +68,28 @@ float dithering(float color, int matrixMode){
     return (hueDiff < d) ? closestColor : secondClosest;
 }
 
+vec4 startDither(vec4 color){
+return vec4(
+    dithering(color.r, matrixMode),
+    dithering(color.g, matrixMode),
+    dithering(color.b, matrixMode),
+            1.0
+            );
+}
+
 void main() {
     vec4 textureColor = texture(targetTexture, textureCoord);
     if (displayMode == 0) {
         outColor = vec4(textureColor.rgb, 1.0);
     } else if (displayMode == 1) {
-        outColor = vec4(
-            dithering(textureColor.r, matrixMode),
-            dithering(textureColor.g, matrixMode),
-            dithering(textureColor.b, matrixMode),
-            1.0);
+        outColor = startDither(textureColor);
     } else if (displayMode == 2){
         float grey = 0.21 * textureColor.r + 0.71 * textureColor.g + 0.07 * textureColor.b;
         float u_colorFactor = 0;
         textureColor = vec4(textureColor.r * u_colorFactor + grey * (1.0 - u_colorFactor), textureColor.g * u_colorFactor + grey * (1.0 - u_colorFactor), textureColor.b * u_colorFactor + grey * (1.0 - u_colorFactor), 1.0);
-        outColor = vec4(
-            dithering(textureColor.r, matrixMode),
-            dithering(textureColor.g, matrixMode),
-            dithering(textureColor.b, matrixMode),
-            1.0);
+        outColor = startDither(textureColor);
     } else if (displayMode == 3){
         textureColor = vec4(1 - textureColor.rgb, 1.0);
-        outColor = vec4(
-            dithering(textureColor.r, matrixMode),
-            dithering(textureColor.g, matrixMode),
-            dithering(textureColor.b, matrixMode),
-            1.0);
+        outColor = startDither(textureColor);
     }
 }
